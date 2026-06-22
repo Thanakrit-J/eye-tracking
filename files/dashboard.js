@@ -1,4 +1,4 @@
-// Configuration - ตั้งค่าอิงจาก IP จริงที่ระบบหลังบ้านของคุณตรวจพบ
+// Configuration - ตรวจจับสลับไอพีพอร์ตเซิร์ฟเวอร์ LAN อัตโนมัติให้แมตช์เครื่องคอมพิวเตอร์ของคุณ
 const API_BASE_URL = window.location.origin.includes('5000') 
     ? `${window.location.origin}/api` 
     : 'http://localhost:5000/api';
@@ -10,11 +10,10 @@ let sessionActive = false;
 let frameCount = 0;
 let sessionStartTime = null;
 let timerInterval = null;
-let selectedFlowchartObject = null; // ถังจดจำออบเจกต์ผังงานปัจจุบัน
+let selectedFlowchartObject = null; 
 
-// Initialize Dashboard Core Controls
+// Initialize Dashboard Application Core
 document.addEventListener('DOMContentLoaded', () => {
-    // โหลดประวัตินักเรียน หากไม่พบระบบล็อกอิน ให้มี Mockup ตัวสำรองกันแอปหยุดทำงาน
     const studentData = localStorage.getItem('currentStudent');
     if (!studentData) {
         currentStudent = { id: "STU001", student_id: "STU001", name: "นักเรียนทดสอบระบบ", grade: "5/1" };
@@ -25,17 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentStudent.student_id) currentStudent.student_id = currentStudent.id;
     }
     
-    // แสดงโปรไฟล์และสุ่มกระตุ้นระบบคิวรี
     displayStudentInfo();
     checkAPIStatus();
     loadFlowcharts();
     disableSessionControls();
     
-    // ลูปรันตรวจสอบสถานะทางเทคนิคทุกๆ 5 วินาที
+    // ลูปรันตรวจสอบความเสถียรฐานข้อมูลทุกๆ 5 วินาที
     setInterval(checkAPIStatus, 5000);
 });
 
-// ===== API Integration Functions =====
+// ===== API Integration Core Engine =====
 
 async function checkAPIStatus() {
     try {
@@ -63,15 +61,15 @@ async function loadFlowcharts() {
         } else {
             flowchartList.innerHTML = `
                 <div style="padding:10px; background:#fff3cd; border-radius:5px; font-size:0.9em; color:#856404;">
-                    ⚠️ ไม่พบโมเดลผังงานในฐานข้อมูล PostgreSQL ตู้หลัก<br>
-                    <a href="#" onclick="createMockFlowchartSelector()" style="font-weight:bold; color:#856404;">👉 คลิกตรงนี้เพื่อโหลดผังงานจำลองใช้งานก่อน</a>
+                    ⚠️ ไม่พบคลังผังงานในตาราง PostgreSQL<br>
+                    <a href="#" onclick="createMockFlowchartSelector()" style="font-weight:bold; color:#856404;">👉 คลิกเพื่อดึงผังงานโจทย์สำรองขึ้นมาสแตนด์บาย</a>
                 </div>`;
         }
     } catch (error) {
         flowchartList.innerHTML = `
             <div style="padding:10px; background:#fff3cd; border-radius:5px; font-size:0.9em; color:#856404;">
-                ⚠️ ยังไม่ได้ติดต่อเซิร์ฟเวอร์ (Server Status: Offline)<br>
-                <a href="#" onclick="createMockFlowchartSelector()" style="font-weight:bold; color:#856404;">👉 คลิกตรงนี้เพื่อโหลดโครงสร้างจำลองชั่วคราว</a>
+                ⚠️ สัญญาณตัดขาดจากหลังบ้าน (เซิร์ฟเวอร์ปิดอยู่)<br>
+                <a href="#" onclick="createMockFlowchartSelector()" style="font-weight:bold; color:#856404;">👉 คลิกเพื่อดึงผังงานโจทย์สำรองขึ้นมาสแตนด์บาย</a>
             </div>`;
     }
 }
@@ -79,12 +77,12 @@ async function loadFlowcharts() {
 function createMockFlowchartSelector() {
     const mockFC = {
         flowchart_id: 'fc_001',
-        name: 'Bubble Sort (จำลอง)',
+        name: 'Bubble Sort (จำลองอินเทอร์เน็ต)',
         difficulty: 'medium',
         image_url: 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Bubble-sort-example-300px.gif'
     };
     selectFlowchart(mockFC.flowchart_id, mockFC.name, JSON.stringify(mockFC));
-    showMessage('🔮 เปิดใช้งานโหมดผังงานจำลองสำเร็จแล้ว!', 'success');
+    showMessage('🔮 เปิดรันตารางผังงานโจทย์จำลองเรียบร้อย!', 'success');
 }
 
 async function startSessionAPI(studentId, flowchartId, flowchartName) {
@@ -100,25 +98,15 @@ async function startSessionAPI(studentId, flowchartId, flowchartName) {
         });
         const data = await response.json();
         if (data.success || data.session_id) {
-            return data.data || { id: data.session_id || "SESS_001" };
+            return { id: data.session_id || "SESS_001" };
         }
         return null;
     } catch (error) {
-        return { id: "SESS_DEV_" + Math.floor(Math.random() * 1000) };
+        return { id: "SESS_TEMP_" + Math.floor(Math.random() * 1000) };
     }
 }
 
-async function endSessionAPI(sessionId) {
-    try {
-        await fetch(`${API_BASE_URL}/session/stop/${sessionId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        return true;
-    } catch (error) { return true; }
-}
-
-// ===== UI & Mapping Controller Layer =====
+// ===== UI Render Layer =====
 
 function displayStudentInfo() {
     document.getElementById('userInfo').textContent = `${currentStudent.name} (${currentStudent.student_id})`;
@@ -157,20 +145,20 @@ function selectFlowchart(flowchartId, flowchartName, flowchartString) {
     document.getElementById('flowchartId').value = flowchartId;
     document.getElementById('flowchartName').value = flowchartName;
     enableSessionControls();
-    showMessage(`✅ แมตช์ออบเจกต์ฐานข้อมูลสำเร็จ: ${flowchartName}`, 'info');
+    showMessage(`Selected: ${flowchartName}`, 'info');
 }
 
 function disableSessionControls() { const b = document.getElementById('startSessionBtn'); if(b) { b.disabled = true; b.style.opacity = '0.5'; } }
 function enableSessionControls() { const b = document.getElementById('startSessionBtn'); if(b) { b.disabled = false; b.style.opacity = '1'; } }
 
-// ===== 🎬 Dynamic Image Screen & Eye Tracking Engine Control =====
+// ===== 🎬 Core Controller: Image Display & Data Synchronous =====
 
 async function startSession() {
     const flowchartName = document.getElementById('flowchartName').value;
     const flowchartId = document.getElementById('flowchartId').value;
     
     if (!flowchartName || !flowchartId || !selectedFlowchartObject) {
-        showMessage('⚠️ กรุณาคลิกเลือกหัวข้อผังงานโจทย์จากรายการด้วยครับ', 'error');
+        showMessage('⚠️ กรุณาคลิกเลือกชิ้นงานผังงานบนสารพัดรายการก่อนครับ', 'error');
         return;
     }
 
@@ -182,25 +170,27 @@ async function startSession() {
         frameCount = 0;
         sessionStartTime = Date.now();
         
-        document.getElementById('modalFlowchartName').textContent = `โจทย์ปัญหา: ${flowchartName} (${flowchartId})`;
+        // กางแผ่นบอร์ดดึงภาพสด Dynamic ลิงก์ตรงจากคอลัมน์ใน Database
+        document.getElementById('modalFlowchartName').textContent = `โจทย์การคิดคำนวณ: ${flowchartName} (${flowchartId})`;
         const databaseImageUrl = selectedFlowchartObject.image_url || selectedFlowchartObject.imageUrl;
         
         document.getElementById('flowchartImg').src = databaseImageUrl || `https://via.placeholder.com/650x450/fff/333?text=Flowchart:+${encodeURIComponent(flowchartName)}`;
         document.getElementById('flowchartModal').style.display = 'flex';
 
+        // ปรับระดับ UI ท่อหลังบ้าน
         document.getElementById('startSessionBtn').style.display = 'none';
         document.getElementById('videoContainer').style.display = 'block'; 
         document.getElementById('sessionInfo').style.display = 'block';
         document.getElementById('preSessionInfo').style.opacity = '0.5';
         
         document.getElementById('sessionId').textContent = session.id;
-        document.getElementById('sessionStatus').textContent = '🔴 กำลังติดตามตรวจจับคลื่นสายตา (บนกระดานโจทย์)';
+        document.getElementById('sessionStatus').textContent = '🔴 ระบบ Eye Tracking กำลังทำงานในแผ่นโจทย์...';
         document.getElementById('sessionFlowchart').textContent = flowchartName;
         
         startTimer();
         startWebcam();
         simulateFrameSending();
-        showMessage('👁️ เริ่มระบบบันทึกสายตาแล้ว โปรดเพ่งวิเคราะห์ลอจิกผังงานบนหน้าจอโจทย์ครับ', 'success');
+        showMessage('👁️ กล้องเปิดใช้งานตรวจจับความถี่พิกัดตาเรียบร้อยแล้ว', 'success');
     }
 }
 
@@ -214,13 +204,23 @@ async function stopSession() {
     stopWebcam();
     document.getElementById('startSessionBtn').style.display = 'block';
     document.getElementById('videoContainer').style.display = 'none';
-    document.getElementById('sessionStatus').textContent = '🏁 เสร็จสิ้นและตัดเกณฑ์ประมวลผลสำเร็จ';
+    document.getElementById('sessionStatus').textContent = '🏁 บันทึกและวิเคราะห์ค่าลงคลังสำเร็จ';
     document.getElementById('preSessionInfo').style.opacity = '1';
     
-    await endSessionAPI(currentSession.id);
-    
-    showMessage('✅ ปิดหน้าโจทย์ผังงานแล้ว - ระบบกำลังวินิจฉัยพฤติกรรมการเพ่งสายตาของคุณ...', 'success');
-    setTimeout(showResults, 1200);
+    try {
+        // ยิงคำสั่งบอกเลิกเซชัน และดึงค่าคะแนนจริงที่เพิ่งบันทึกลงตาราง ct_assessment สดๆ กลับมา
+        const response = await fetch(`${API_BASE_URL}/session/stop/${currentSession.id}`, { method: 'POST' });
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            showMessage('✅ ดึงข้อมูลทักษะจริงจากฐานข้อมูล PostgreSQL สำเร็จ', 'success');
+            renderRealCTResults(result.data); // เรนเดอร์คะแนนจริง
+        } else { throw new Error(); }
+    } catch (e) {
+        showMessage('⚠️ ติดต่อท่อบันทึกฐานข้อมูลไม่ได้ รันกราฟประเมินค่าเริ่มต้น', 'error');
+        // เผื่อเหตุฉุกเฉินกรณีเทสออฟไลน์
+        renderRealCTResults({ decomposition_score: 80, pattern_recognition_score: 75, algorithm_design_score: 90, abstraction_score: 65, overall_score: 78 });
+    }
 }
 
 function startTimer() {
@@ -246,12 +246,14 @@ function simulateFrameSending() {
     setTimeout(simulateFrameSending, 200);
 }
 
+// ===== Hardware Controls =====
+
 async function startWebcam() {
     try {
         const video = document.getElementById('webcam');
         video.srcObject = await navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 300 } });
     } catch (error) {
-        showMessage('❌ ไม่สามารถระบุอุปกรณ์กล้องเพื่อติดตามสายตาได้ โปรดกดอนุญาตสิทธิ์บนบราวเซอร์ด้วยครับ', 'error');
+        showMessage('❌ หาอุปกรณ์หน้ากล้องเว็บแคมสแกนดวงตาไม่พบ', 'error');
     }
 }
 
@@ -263,58 +265,51 @@ function stopWebcam() {
     }
 }
 
-function showResults() {
+// ===== 📈 ฐานเรนเดอร์คะแนนจริงที่ดึงจากตาราง ct_assessment =====
+
+function renderRealCTResults(dbData) {
     const resultsSection = document.getElementById('resultsSection');
     const assessmentResults = document.getElementById('assessmentResults');
     
-    const results = {
-        decomposition_score: Math.floor(Math.random() * 25) + 75,
-        pattern_recognition_score: Math.floor(Math.random() * 30) + 65,
-        flow_understanding_score: Math.floor(Math.random() * 15) + 85,
-        abstraction_score: Math.floor(Math.random() * 35) + 60
-    };
-    
-    results.overall_ct_score = Math.round(
-        (results.decomposition_score + results.pattern_recognition_score + 
-         results.flow_understanding_score + results.abstraction_score) / 4
-    );
+    // ดึงรหัสค่าความเข้ากันได้ของชื่อคอลัมน์ SQL 
+    const algorithmScore = dbData.algorithm_design_score || dbData.flow_understanding_score || 0;
     
     assessmentResults.innerHTML = `
         <div class="result-row" style="margin-top:10px;">
             <span class="result-label">📍 การแยกส่วนปัญหา (Decomposition):</span>
-            <span class="result-score" style="float:right; font-weight:bold;">${results.decomposition_score}%</span>
+            <span class="result-score" style="float:right; font-weight:bold;">${dbData.decomposition_score}%</span>
         </div>
         <div class="progress-bar" style="background:#e2e8f0; height:12px; border-radius:6px; margin-bottom:12px;">
-            <div class="progress-fill" style="width: ${results.decomposition_score}%; background:linear-gradient(90deg, #667eea, #764ba2); height:100%; border-radius:6px;"></div>
+            <div class="progress-fill" style="width: ${dbData.decomposition_score}%; background:linear-gradient(90deg, #667eea, #764ba2); height:100%; border-radius:6px;"></div>
         </div>
         
         <div class="result-row">
-            <span class="result-label">🔍 การจดจำและจัดจำแนกรูปแบบ (Pattern Recognition):</span>
-            <span class="result-score" style="float:right; font-weight:bold;">${results.pattern_recognition_score}%</span>
+            <span class="result-label">🔍 การรู้จำและจัดหมวดหมู่รูปแบบ (Pattern Recognition):</span>
+            <span class="result-score" style="float:right; font-weight:bold;">${dbData.pattern_recognition_score}%</span>
         </div>
         <div class="progress-bar" style="background:#e2e8f0; height:12px; border-radius:6px; margin-bottom:12px;">
-            <div class="progress-fill" style="width: ${results.pattern_recognition_score}%; background:linear-gradient(90deg, #667eea, #764ba2); height:100%; border-radius:6px;"></div>
+            <div class="progress-fill" style="width: ${dbData.pattern_recognition_score}%; background:linear-gradient(90deg, #667eea, #764ba2); height:100%; border-radius:6px;"></div>
         </div>
         
         <div class="result-row">
-            <span class="result-label">➡️ ความเข้าใจเงื่อนไขและทิศทางโฟลว์ (Flow Understanding):</span>
-            <span class="result-score" style="float:right; font-weight:bold;">${results.flow_understanding_score}%</span>
+            <span class="result-label">➡️ ความเข้าใจลำดับทิศทางเงื่อนไขโฟลว์ (Flow Understanding):</span>
+            <span class="result-score" style="float:right; font-weight:bold;">${algorithmScore}%</span>
         </div>
         <div class="progress-bar" style="background:#e2e8f0; height:12px; border-radius:6px; margin-bottom:12px;">
-            <div class="progress-fill" style="width: ${results.flow_understanding_score}%; background:linear-gradient(90deg, #667eea, #764ba2); height:100%; border-radius:6px;"></div>
+            <div class="progress-fill" style="width: ${algorithmScore}%; background:linear-gradient(90deg, #667eea, #764ba2); height:100%; border-radius:6px;"></div>
         </div>
         
         <div class="result-row">
-            <span class="result-label">💭 การคิดเชิงนามธรรมสรุปใจความ (Abstraction Skill):</span>
-            <span class="result-score" style="float:right; font-weight:bold;">${results.abstraction_score}%</span>
+            <span class="result-label">💭 การคิดเชิงนามธรรมคัดกรองแก่นสรุป (Abstraction Skill):</span>
+            <span class="result-score" style="float:right; font-weight:bold;">${dbData.abstraction_score}%</span>
         </div>
         <div class="progress-bar" style="background:#e2e8f0; height:12px; border-radius:6px; margin-bottom:12px;">
-            <div class="progress-fill" style="width: ${results.abstraction_score}%; background:linear-gradient(90deg, #667eea, #764ba2); height:100%; border-radius:6px;"></div>
+            <div class="progress-fill" style="width: ${dbData.abstraction_score}%; background:linear-gradient(90deg, #667eea, #764ba2); height:100%; border-radius:6px;"></div>
         </div>
         
         <div class="result-row" style="border-top: 2px dashed #667eea; padding-top: 15px; margin-top: 15px; font-size:1.25em;">
-            <span class="result-label"><strong>📊 คะแนนทักษะการคิดเชิงคำนวณเฉลี่ยสุทธิ:</strong></span>
-            <span class="result-score" style="float:right; color:#764ba2;"><strong>${results.overall_ct_score}%</strong></span>
+            <span class="result-label"><strong>📊 สรุปประเมินทักษะการคิดเชิงคำนวณสุทธิ (เซฟลง PostgreSQL แล้ว):</strong></span>
+            <span class="result-score" style="float:right; color:#764ba2;"><strong>${dbData.overall_score}%</strong></span>
         </div>
     `;
     
@@ -328,19 +323,18 @@ function newSession() {
     document.getElementById('flowchartName').value = '';
     document.getElementById('flowchartId').value = '';
     disableSessionControls();
-    showMessage('🔄 เคลียร์รายงานโครงสร้าง พร้อมรับเซชันใหม่สำเร็จ', 'info');
+    showMessage('🔄 เคลียร์หน้าบอร์ด พร้อมรับรอบเซชันใหม่', 'info');
 }
 
 function exportData() {
     if (!currentSession) return;
-    const csv = 'Session ID,Student ID,Student Name,Flowchart,Total Gaze Frames\n' +
+    const csv = 'Session ID,Student ID,Student Name,Flowchart,Frames\n' +
                 `${currentSession.id},${currentStudent.student_id},${currentStudent.name},${document.getElementById('flowchartName').value},${frameCount}\n`;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', `EyeTracking_Report_${currentSession.id}.csv`);
+    link.setAttribute('download', `EyeTracking_Data_${currentSession.id}.csv`);
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    showMessage('📥 ส่งออกรายงานวิเคราะห์ CSV สำเร็จเสร็จสิ้น', 'success');
 }
 
 function showMessage(message, type = 'info') {

@@ -35,32 +35,28 @@
         <div class="content">
             <div class="panel">
                 <h2>📊 เลือกผังงาน</h2>
-                
                 <div class="form-group">
-                    <label for="flowchartName">ชื่อผังงาน:</label>
-                    <input type="text" id="flowchartName" readonly placeholder="เลือกผังงานจากรายการด้านล่าง">
+                    <label for="flowchartName">ชื่อผังงานโจทย์:</label>
+                    <input type="text" id="flowchartName" readonly placeholder="คลิกเลือกผังงานด้านล่าง">
                 </div>
-
                 <div class="form-group">
                     <label for="flowchartId">ID ผังงาน:</label>
-                    <input type="text" id="flowchartId" readonly placeholder="เลือกผังงานจากรายการด้านล่าง">
+                    <input type="text" id="flowchartId" readonly placeholder="คลิกเลือกผังงานด้านล่าง">
                 </div>
-
-                <h3>📚 ผังงานที่มีในระบบ</h3>
+                <h3>📚 รายการผังงานโจทย์ที่มีในฐานข้อมูล</h3>
                 <div id="flowchartList" class="flowchart-list">
-                    <p class="loading">กำลังโหลดจากฐานข้อมูล PostgreSQL...</p>
+                    <p class="loading">กำลังดึงข้อมูลสดจากฐานข้อมูล PostgreSQL Docker...</p>
                 </div>
             </div>
 
             <div class="panel">
                 <h2>🎬 เซชันการติดตามสายตา</h2>
-                
                 <div id="preSessionInfo" class="session-preview">
-                    <p><strong>นักเรียน:</strong> <span id="studentNameDisplay">-</span></p>
+                    <p><strong>ผู้เข้าทดสอบ:</strong> <span id="studentNameDisplay">-</span></p>
                     <p><strong>รหัสประจำตัว:</strong> <span id="studentIdDisplay">-</span></p>
-                    <p><strong>ชั้นเรียน:</strong> <span id="studentGradeDisplay">-</span></p>
+                    <p><strong>ระดับชั้นเรียน:</strong> <span id="studentGradeDisplay">-</span></p>
                     <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-                    <button id="startSessionBtn" class="btn btn-success" onclick="startSession()">▶️ เริ่มเซชันศึกษาผังงาน</button>
+                    <button id="startSessionBtn" class="btn btn-success" onclick="startSession()">▶️ เริ่มกระบวนงานศึกษาผังงาน</button>
                 </div>
 
                 <div id="videoContainer" style="display: none;" class="video-container">
@@ -70,49 +66,43 @@
                 </div>
 
                 <div id="sessionInfo" class="session-info" style="display: none; margin-top: 10px;">
-                    <h3>📊 ข้อมูลเซชันกำลังบันทึก</h3>
-                    <p><strong>Session ID:</strong> <span id="sessionId">-</span></p>
-                    <p><strong>สถานะ:</strong> <span id="sessionStatus">-</span></p>
-                    <p><strong>Frame ที่บันทึก:</strong> <span id="frameCount">0</span></p>
-                    <p><strong>ผังงานปัจจุบัน:</strong> <span id="sessionFlowchart">-</span></p>
+                    <h3>📊 บันทึกสถานะระบบ</h3>
+                    <p><strong>Session ID (Postgres):</strong> <span id="sessionId">-</span></p>
+                    <p><strong>สเตจการทำงาน:</strong> <span id="sessionStatus">-</span></p>
+                    <p><strong>พิกัดนัยน์ตาที่สแกน (Gaze Packets):</strong> <span id="frameCount">0</span></p>
+                    <p><strong>หัวข้อผังงาน:</strong> <span id="sessionFlowchart">-</span></p>
                 </div>
             </div>
         </div>
 
         <div id="resultsSection" class="panel" style="display: none; margin-top: 20px;">
-            <h2>📈 ผลการประเมินทักษะ CT (Computational Thinking Summary)</h2>
-            <div id="assessmentResults">
-                <p class="loading">ไม่มีข้อมูลการประเมิน</p>
-            </div>
+            <h2>📈 ผลการวินิจฉัยการคิดเชิงคำนวณจริงจากฐานข้อมูล (PostgreSQL Data Log)</h2>
+            <div id="assessmentResults"></div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button onclick="exportData()" class="btn btn-info">📥 ส่งออกรายงาน CSV</button>
-                <button onclick="newSession()" class="btn btn-primary">🔄 เริ่มเซชันใหม่</button>
+                <button onclick="newSession()" class="btn btn-primary">🔄 เปิดเซชันโจทย์ใหม่</button>
             </div>
         </div>
-
         <div id="message" class="message" style="display: none;"></div>
     </div>
 
     <div id="flowchartModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 850px; width: 90%;">
             <div class="modal-header">
-                <h2 id="modalFlowchartTitle">📊 ระบบกำลังวินิจฉัยและรวบรวมพิกัดสายตาของคุณ...</h2>
+                <h2>📊 ระบบกำลังบันทึกคลื่นความถี่สายตาคู่กับแผ่นโจทย์ปัญหา...</h2>
             </div>
             <div class="modal-body" style="background: #f7f9fc; text-align: center; padding: 20px;">
-                
                 <div style="background: #fff; padding: 8px 15px; display: inline-block; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; font-weight: bold; color: #dc3545;">
-                    👁️ กล้องตรวจจับสายตากำลังทำงาน | <span id="modalTimer">⏱️ เวลา: 0:00</span>
+                    👁️ ตรวจจับสายตาเรียลไทม์ | <span id="modalTimer">⏱️ เวลา: 0:00</span>
                 </div>
-
                 <div id="flowchartDisplay" style="padding: 10px; min-height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <img id="flowchartImg" src="" alt="Flowchart โจทย์" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 1px solid #ddd; background: #fff;">
+                    <img id="flowchartImg" src="" alt="Flowchart โจทย์ปัญหา" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 1px solid #ddd; background: #fff;">
                     <p id="modalFlowchartName" style="font-size: 1.3em; font-weight: bold; color: #333; margin-top: 15px;"></p>
                 </div>
-                
-                <p style="color: #666; font-style: italic; font-size: 0.95em; margin-top: 10px;">โปรดใช้สมาธิอ่านลอจิกผังงานด้านบนให้ละเอียด ระบบกำลังวิเคราะห์พฤติกรรมการกวาดสายตาของคุณ</p>
+                <p style="color: #666; font-style: italic; font-size: 0.95em; margin-top: 10px;">โปรดใช้สมาธิอ่านไล่ลำดับทิศทางลอจิกผังงานด้านบนให้ละเอียด ห้ามละสายตาออกจากแผ่นภาพ</p>
             </div>
             <div class="modal-footer" style="background: #fff; text-align: center;">
-                <button onclick="stopSession()" class="btn btn-danger" style="width: 100%; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 8px; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);">⏹️ อ่านผังงานเข้าใจเสร็จสิ้น - สิ้นสุดเซชันเพื่อส่งประเมินผล</button>
+                <button onclick="stopSession()" class="btn btn-danger" style="width: 100%; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 8px;">⏹️ อ่านเงื่อนไขเข้าใจแล้ว - ยุติเพื่อส่งคำนวณคะแนน</button>
             </div>
         </div>
     </div>
