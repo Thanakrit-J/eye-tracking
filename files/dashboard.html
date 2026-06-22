@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header with Logout -->
         <header class="header">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
@@ -22,7 +21,6 @@
             </div>
         </header>
 
-        <!-- Status Bar -->
         <div class="status-bar">
             <div class="status-item">
                 <span class="status-label">API Status:</span>
@@ -34,190 +32,100 @@
             </div>
         </div>
 
-        <!-- Main Content -->
         <div class="content">
-            <!-- Left Panel: Flowchart Selection -->
             <div class="panel">
                 <h2>📊 เลือกผังงาน</h2>
                 
                 <div class="form-group">
                     <label for="flowchartName">ชื่อผังงาน:</label>
-                    <input type="text" id="flowchartName" placeholder="เช่น Bubble Sort" value="Bubble Sort">
+                    <input type="text" id="flowchartName" readonly placeholder="เลือกผังงานจากรายการด้านล่าง">
                 </div>
 
                 <div class="form-group">
                     <label for="flowchartId">ID ผังงาน:</label>
-                    <input type="text" id="flowchartId" placeholder="เช่น fc_001" value="fc_001">
+                    <input type="text" id="flowchartId" readonly placeholder="เลือกผังงานจากรายการด้านล่าง">
                 </div>
 
-                <div class="form-group">
-                    <label for="flowchartDifficulty">ระดับความยาก:</label>
-                    <select id="flowchartDifficulty">
-                        <option value="easy">ง่าย</option>
-                        <option value="medium" selected>ปานกลาง</option>
-                        <option value="hard">ยาก</option>
-                    </select>
-                </div>
-
-                <h3>📚 ผังงานที่มี</h3>
+                <h3>📚 ผังงานที่มีในระบบ</h3>
                 <div id="flowchartList" class="flowchart-list">
-                    <p class="loading">กำลังโหลด...</p>
+                    <p class="loading">กำลังโหลดจากฐานข้อมูล PostgreSQL...</p>
                 </div>
             </div>
 
-            <!-- Right Panel: Eye Tracking Session -->
             <div class="panel">
                 <h2>🎬 เซชันการติดตามสายตา</h2>
                 
                 <div id="preSessionInfo" class="session-preview">
                     <p><strong>นักเรียน:</strong> <span id="studentNameDisplay">-</span></p>
-                    <p><strong>รหัส:</strong> <span id="studentIdDisplay">-</span></p>
+                    <p><strong>รหัสประจำตัว:</strong> <span id="studentIdDisplay">-</span></p>
                     <p><strong>ชั้นเรียน:</strong> <span id="studentGradeDisplay">-</span></p>
                     <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-                    <button id="startSessionBtn" class="btn btn-success" onclick="startSession()">▶️ เริ่มเซชัน</button>
-                    <button id="stopSessionBtn" class="btn btn-danger" onclick="stopSession()" style="display: none;">⏹️ สิ้นสุดเซชัน</button>
+                    <button id="startSessionBtn" class="btn btn-success" onclick="startSession()">▶️ เริ่มเซชันศึกษาผังงาน</button>
                 </div>
 
-                <!-- Video Container -->
                 <div id="videoContainer" style="display: none;" class="video-container">
-                    <video id="webcam" autoplay playsinline width="400" height="300"></video>
+                    <video id="webcam" autoplay playsinline width="180" height="135" style="transform: scaleX(-1); border-radius: 6px; background: #000; border: 2px solid #667eea;"></video>
                     <canvas id="canvas" width="400" height="300" style="display: none;"></canvas>
-                    <p id="sessionTimer">⏱️ เวลา: 0:00</p>
+                    <p id="sessionTimer" style="font-weight: bold; color: #dc3545; font-size: 1.1em; margin-top: 5px;">⏱️ เวลาทดสอบ: 0:00</p>
                 </div>
 
-                <!-- Session Info -->
-                <div id="sessionInfo" class="session-info" style="display: none;">
-                    <h3>📊 ข้อมูลเซชัน</h3>
+                <div id="sessionInfo" class="session-info" style="display: none; margin-top: 10px;">
+                    <h3>📊 ข้อมูลเซชันกำลังบันทึก</h3>
                     <p><strong>Session ID:</strong> <span id="sessionId">-</span></p>
                     <p><strong>สถานะ:</strong> <span id="sessionStatus">-</span></p>
                     <p><strong>Frame ที่บันทึก:</strong> <span id="frameCount">0</span></p>
-                    <p><strong>ผังงาน:</strong> <span id="sessionFlowchart">-</span></p>
+                    <p><strong>ผังงานปัจจุบัน:</strong> <span id="sessionFlowchart">-</span></p>
                 </div>
             </div>
         </div>
 
-        <!-- Results Section -->
-        <div id="resultsSection" class="panel" style="display: none;">
-            <h2>📈 ผลการประเมิน CT (Computational Thinking)</h2>
+        <div id="resultsSection" class="panel" style="display: none; margin-top: 20px;">
+            <h2>📈 ผลการประเมินทักษะ CT (Computational Thinking Summary)</h2>
             <div id="assessmentResults">
-                <p class="loading">ไม่มีข้อมูล</p>
+                <p class="loading">ไม่มีข้อมูลการประเมิน</p>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button onclick="exportData()" class="btn btn-info">📥 ส่งออก CSV</button>
-                <button onclick="newSession()" class="btn btn-primary">🔄 เซชันใหม่</button>
+                <button onclick="exportData()" class="btn btn-info">📥 ส่งออกรายงาน CSV</button>
+                <button onclick="newSession()" class="btn btn-primary">🔄 เริ่มเซชันใหม่</button>
             </div>
         </div>
 
-        <!-- Messages -->
         <div id="message" class="message" style="display: none;"></div>
     </div>
 
-    <!-- Flowchart Modal -->
     <div id="flowchartModal" class="modal" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 850px; width: 90%;">
             <div class="modal-header">
-                <h2 id="modalFlowchartTitle">📊 ผังงาน</h2>
-                <span class="modal-close" onclick="closeFlowchartModal()">&times;</span>
+                <h2 id="modalFlowchartTitle">📊 ระบบกำลังวินิจฉัยและรวบรวมพิกัดสายตาของคุณ...</h2>
             </div>
-            <div class="modal-body">
-                <div id="flowchartDisplay" style="text-align: center; padding: 40px;">
-                    <!-- Flowchart will be displayed here -->
-                    <div style="background: #f0f0f0; padding: 30px; border-radius: 10px; margin-bottom: 20px;">
-                        <p style="font-size: 3em; margin: 0;">📋</p>
-                        <p id="modalFlowchartName" style="font-size: 1.5em; margin: 10px 0; color: #333;"></p>
-                        <p style="color: #666; margin: 0;">โปรดศึกษาผังงานต่อไป</p>
-                    </div>
+            <div class="modal-body" style="background: #f7f9fc; text-align: center; padding: 20px;">
+                
+                <div style="background: #fff; padding: 8px 15px; display: inline-block; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; font-weight: bold; color: #dc3545;">
+                    👁️ กล้องตรวจจับสายตากำลังทำงาน | <span id="modalTimer">⏱️ เวลา: 0:00</span>
                 </div>
-                <p style="color: #666; text-align: center; font-style: italic;">เมื่อคุณเข้าใจผังงานแล้ว กดปุ่มด้านล่างเพื่อเริ่มการบันทึก</p>
+
+                <div id="flowchartDisplay" style="padding: 10px; min-height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <img id="flowchartImg" src="" alt="Flowchart โจทย์" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 1px solid #ddd; background: #fff;">
+                    <p id="modalFlowchartName" style="font-size: 1.3em; font-weight: bold; color: #333; margin-top: 15px;"></p>
+                </div>
+                
+                <p style="color: #666; font-style: italic; font-size: 0.95em; margin-top: 10px;">โปรดใช้สมาธิอ่านลอจิกผังงานด้านบนให้ละเอียด ระบบกำลังวิเคราะห์พฤติกรรมการกวาดสายตาของคุณ</p>
             </div>
-            <div class="modal-footer">
-                <button onclick="startEyeTracking()" class="btn btn-success" style="width: 100%;">✅ เข้าใจแล้ว - เริ่มบันทึก</button>
-                <button onclick="closeFlowchartModal()" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">❌ ปิด</button>
+            <div class="modal-footer" style="background: #fff; text-align: center;">
+                <button onclick="stopSession()" class="btn btn-danger" style="width: 100%; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 8px; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);">⏹️ อ่านผังงานเข้าใจเสร็จสิ้น - สิ้นสุดเซชันเพื่อส่งประเมินผล</button>
             </div>
         </div>
     </div>
 
     <style>
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 0;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            border-bottom: 2px solid #667eea;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px 15px 0 0;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5em;
-        }
-
-        .modal-close {
-            font-size: 2em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .modal-close:hover {
-            transform: scale(1.2);
-        }
-
-        .modal-body {
-            padding: 30px;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .modal-footer {
-            padding: 20px;
-            border-top: 1px solid #ddd;
-            background: #f8f9fa;
-            border-radius: 0 0 15px 15px;
-        }
-
-        .btn-secondary {
-            background: #6c757d !important;
-            color: white !important;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268 !important;
-        }
+        .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; animation: zoomIn 0.3s ease-out; }
+        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header { padding: 18px 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; }
+        .modal-body { max-height: 75vh; overflow-y: auto; }
+        .flowchart-item:hover { background: #edf2f7 !important; transform: translateX(3px); }
     </style>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
