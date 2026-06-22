@@ -1,8 +1,8 @@
 """
-Eye Tracking System - Flask Application Factory
+Eye Tracking System - Flask Application Factory (Fixed for Object Configuration)
 """
 
-from flask import Flask, send_from_directory, render_template_string
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from config import config
@@ -12,7 +12,7 @@ import os
 # Initialize SQLAlchemy
 db = SQLAlchemy()
 
-def create_app(config_name='development'):
+def create_app(config_name=None):
     """
     Application factory function
     """
@@ -22,8 +22,16 @@ def create_app(config_name='development'):
     
     app = Flask(__name__, static_folder=parent_dir, static_url_path='')
     
-    # Load configuration
-    app.config.from_object(config[config_name])
+    # 💡 ปรับปรุงใหม่: ดึงโหมดจาก .env อัตโนมัติ (เช่น development, production)
+    if config_name is None:
+        config_name = os.getenv('FLASK_ENV', 'development')
+        
+    # 💡 ปรับปรุงใหม่: แปลงคลาสเป็น Instance ก่อน เพื่อให้ `@property` ของ URI ทำงานได้ถูกต้อง
+    config_obj = config[config_name]()
+    app.config.from_object(config_obj)
+    
+    # ดึงค่า URI มาเซ็ตลงแอปตรงๆ อีกชั้นเพื่อให้มั่นใจว่าดึงข้อมูลจาก Docker แน่นอน
+    app.config['SQLALCHEMY_DATABASE_URI'] = config_obj.SQLALCHEMY_DATABASE_URI
     
     # Initialize extensions
     CORS(app)
