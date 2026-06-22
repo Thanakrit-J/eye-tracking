@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine # ใช้เวอร์ชัน 16 (แนะนำเวอร์ชัน alpine เพราะขนาดเล็กและเบา)
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin        # ชื่อ Username ของคุณ
+      POSTGRES_PASSWORD: admin  # รหัสผ่านของคุณ
+      POSTGRES_DB: eyetracking_db      # ชื่อฐานข้อมูลเริ่มต้น
+    ports:
+      - "5432:5432"               # Map port เครื่องเรา (ซ้าย) เข้ากับ Container (ขวา)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # เก็บข้อมูลไว้ในเครื่อง ข้อมูลจะไม่หายตอนปิดคอนเทนเนอร์
+
+volumes:
+  postgres_data: # ประกาศ Volume สำหรับเก็บข้อมูล

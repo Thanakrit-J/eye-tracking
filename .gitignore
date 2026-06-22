@@ -1,0 +1,23 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Database files (กรณีมี SQLite ค้างอยู่)
+*.db
+*.sqlite3
+
+# Environment variables (ห้ามเอาไฟล์รหัสผ่านขึ้นคลาวด์เด็ดขาด!)
+.env
+files/.env
+
+# IDE / Operating System files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Docker logs & data (ถ้าตั้งโฟลเดอร์เก็บแยกไว้)
+*.log
